@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تريدات روبلوكس - المنشورات</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="feed-page">
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section-small">
+                <div class="logo-pulse">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <span class="site-name">تريدات روبلوكس</span>
+            </div>
+
+            <nav class="main-nav">
+                <a href="#" class="nav-link active"><i class="fas fa-home"></i></a>
+                <a href="#" class="nav-link" onclick="alert('قريباً!')"><i class="fas fa-search"></i></a>
+                <a href="#" class="nav-link" onclick="alert('قريباً!')"><i class="fas fa-envelope"></i></a>
+            </nav>
+
+            <div class="user-section">
+                <span class="username" id="currentUser">زائر</span>
+                <div class="user-avatar">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" id="userAvatar">
+                    <div class="online-status"></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="feed-container">
+        <!-- Sidebar - إحصائيات فقط -->
+        <aside class="sidebar">
+            <div class="sidebar-card stats-card">
+                <h3><i class="fas fa-chart-line"></i> إحصائيات</h3>
+                <div class="stat-item">
+                    <i class="fas fa-box"></i>
+                    <span class="stat-value" id="totalPosts">0</span>
+                    <span class="stat-label">منشور</span>
+                </div>
+                <div class="stat-item">
+                    <i class="fas fa-handshake"></i>
+                    <span class="stat-value" id="totalTrades">0</span>
+                    <span class="stat-label">تبادل</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Feed -->
+        <section class="feed-section">
+            <div class="feed-header">
+                <h2><i class="fas fa-fire"></i> أحدث التريدات</h2>
+            </div>
+
+            <div class="posts-grid" id="postsContainer">
+                <!-- المنشورات تظهر هنا -->
+            </div>
+
+            <!-- رسالة عندما لا يوجد منشورات -->
+            <div id="emptyMessage" style="text-align: center; padding: 60px 20px; color: var(--text-secondary); display: none;">
+                <i class="fas fa-box-open" style="font-size: 4rem; margin-bottom: 20px; opacity: 0.5;"></i>
+                <h3>لا توجد تريدات بعد</h3>
+                <p>كن أول من ينشر تريد! اضغط على الزر +</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- زر الإضافة العائم -->
+    <button class="fab-btn" onclick="openModal()" title="نشر تريد جديد">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- نموذج النشر المنبثق -->
+    <div class="modal-overlay" id="postModal" onclick="closeModalOutside(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> نشر تريد جديد</h3>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="postForm" onsubmit="handlePost(event)">
+                <!-- صورة العنصر -->
+                <div class="form-section">
+                    <h4><i class="fas fa-gift"></i> صورة العنصر المعروض</h4>
+                    <div class="image-upload" onclick="document.getElementById('itemImage').click()">
+                        <input type="file" id="itemImage" accept="image/*" hidden onchange="previewImage(this, 'itemPreview')">
+                        <div class="upload-placeholder" id="itemPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اضغط لرفع صورة العنصر</span>
+                        </div>
+                        <img id="itemPreview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="removeImage(event, 'itemPreview', 'itemPlaceholder', 'itemImage')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="itemName" required placeholder="اسم العنصر" class="modern-input">
+                </div>
+
+                <!-- صورة المقابل -->
+                <div class="form-section">
+                    <h4><i class="fas fa-hand-holding-usd"></i> صورة المقابل المطلوب</h4>
+                    <div class="image-upload" onclick="document.getElementById('tradeImage').click()">
+                        <input type="file" id="tradeImage" accept="image/*" hidden onchange="previewImage(this, 'tradePreview')">
+                        <div class="upload-placeholder" id="tradePlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اضغط لرفع صورة المقابل</span>
+                        </div>
+                        <img id="tradePreview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="removeImage(event, 'tradePreview', 'tradePlaceholder', 'tradeImage')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="tradeName" required placeholder="اسم المقابل" class="modern-input">
+                </div>
+
+                <!-- رابط TikTok -->
+                <div class="form-section">
+                    <h4><i class="fab fa-tiktok"></i> التواصل (اختياري)</h4>
+                    <input type="url" id="tiktokUrl" placeholder="رابط حساب TikTok" class="modern-input">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">نشر التريد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================
+        // كود صفحة المنشورات المعدل
+        // ============================================
+
+        let currentUser = null;
+        let posts = [];
+
+        // التحقق من تسجيل الدخول
+        window.onload = function() {
+            const userData = sessionStorage.getItem('roblox_current_user');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userData);
+            document.getElementById('currentUser').textContent = currentUser.username;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+
+            loadPosts();
+        };
+
+        // تحميل المنشورات
+        function loadPosts() {
+            posts = JSON.parse(localStorage.getItem('roblox_posts') || '[]');
+            renderPosts();
+            updateStats();
+        }
+
+        // عرض المنشورات
+        function renderPosts() {
+            const container = document.getElementById('postsContainer');
+            const emptyMessage = document.getElementById('emptyMessage');
+            
+            container.innerHTML = '';
+
+            if (posts.length === 0) {
+                emptyMessage.style.display = 'block';
+                return;
+            } else {
+                emptyMessage.style.display = 'none';
+            }
+
+            // عرض المنشورات من الأحدث للأقدم
+            posts.slice().reverse().forEach(post => {
+                const card = createPostCard(post);
+                container.appendChild(card);
+            });
+        }
+
+        // إنشاء بطاقة المنشور
+        function createPostCard(post) {
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            
+            const hasTiktok = post.tiktokUrl && post.tiktokUrl.trim() !== '';
+            
+            card.innerHTML = `
+                <div class="post-header">
+                    <div class="post-author">
+                        <img src="${post.authorAvatar}" class="author-avatar" alt="${post.author}">
+                        <div class="author-info">
+                            <h4>${post.author}</h4>
+                            <span class="post-time">${formatTime(post.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="post-images-container">
+                    <div class="post-image-box">
+                        <span class="image-label">العنصر</span>
+                        <img src="${post.itemImage}" alt="${post.itemName}" onerror="this.src='https://via.placeholder.com/300x200/6366f1/ffffff?text=No+Image'">
+                    </div>
+                    <div class="post-image-box">
+                        <span class="image-label">المقابل</span>
+                        <img src="${post.tradeImage}" alt="${post.tradeName}" onerror="this.src='https://via.placeholder.com/300x200/ec4899/ffffff?text=No+Image'">
+                    </div>
+                </div>
+                
+                <div class="post-content">
+                    <div class="trade-info">
+                        <div class="trade-item">
+                            <i class="fas fa-gift"></i>
+                            <span>${post.itemName}</span>
+                        </div>
+                        <i class="fas fa-exchange-alt trade-arrow"></i>
+                        <div class="trade-item">
+                            <i class="fas fa-hand-holding-usd"></i>
+                            <span>${post.tradeName}</span>
+                        </div>
+                    </div>
+                    
+                    ${hasTiktok ? `
+                    <a href="${post.tiktokUrl}" target="_blank" class="tiktok-btn" onclick="event.stopPropagation()">
+                        <i class="fab fa-tiktok"></i>
+                        <span>تواصل عبر TikTok</span>
+                    </a>
+                    ` : '<p class="no-contact">لا يوجد رابط تواصل</p>'}
+                    
+                    <div class="post-footer">
+                        <button class="action-btn like-btn" onclick="likePost(${post.id})">
+                            <i class="fas fa-heart"></i>
+                            <span>${post.likes || 0}</span>
+                        </button>
+                        ${post.author === currentUser.username ? `
+                        <button class="action-btn delete-btn" onclick="deletePost(${post.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        // تنسيق الوقت
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'الآن';
+            if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+            if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+            if (diff < 604800) return `منذ ${Math.floor(diff / 86400)} يوم`;
+            return date.toLocaleDateString('ar-SA');
+        }
+
+        // تحديث الإحصائيات
+        function updateStats() {
+            document.getElementById('totalPosts').textContent = posts.length;
+            document.getElementById('totalTrades').textContent = posts.length;
+        }
+
+        // فتح/إغلاق المودال
+        function openModal() {
+            document.getElementById('postModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('postModal').classList.remove('active');
+            document.getElementById('postForm').reset();
+            removeImage(null, 'itemPreview', 'itemPlaceholder', 'itemImage');
+            removeImage(null, 'tradePreview', 'tradePlaceholder', 'tradeImage');
+        }
+
+        function closeModalOutside(e) {
+            if (e.target.id === 'postModal') closeModal();
+        }
+
+        // معاينة الصورة
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    const placeholder = document.getElementById(previewId.replace('Preview', 'Placeholder'));
+                    const removeBtn = preview.parentElement.querySelector('.remove-image');
+                    
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    removeBtn.style.display = 'flex';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // حذف الصورة
+        function removeImage(e, previewId, placeholderId, inputId) {
+            if (e) e.stopPropagation();
+            
+            const preview = document.getElementById(previewId);
+            const placeholder = document.getElementById(placeholderId);
+            const input = document.getElementById(inputId);
+            const removeBtn = preview.parentElement.querySelector('.remove-image');
+            
+            preview.src = '';
+            preview.style.display = 'none';
+            placeholder.style.display = 'flex';
+            input.value = '';
+            removeBtn.style.display = 'none';
+        }
+
+        // نشر منشور
+        function handlePost(e) {
+            e.preventDefault();
+
+            const itemName = document.getElementById('itemName').value.trim();
+            const tradeName = document.getElementById('tradeName').value.trim();
+            const tiktokUrl = document.getElementById('tiktokUrl').value.trim();
+            const itemPreview = document.getElementById('itemPreview');
+            const tradePreview = document.getElementById('tradePreview');
+
+            // التحقق من وجود الصور
+            if (!itemPreview.src || itemPreview.style.display === 'none') {
+                showToast('يرجى رفع صورة العنصر!', 'error');
+                return;
+            }
+
+            if (!tradePreview.src || tradePreview.style.display === 'none') {
+                showToast('يرجى رفع صورة المقابل!', 'error');
+                return;
+            }
+
+            const post = {
+                id: Date.now(),
+                author: currentUser.username,
+                authorAvatar: currentUser.avatar,
+                itemName: itemName,
+                itemImage: itemPreview.src,
+                tradeName: tradeName,
+                tradeImage: tradePreview.src,
+                tiktokUrl: tiktokUrl,
+                likes: 0,
+                createdAt: new Date().toISOString()
+            };
+
+            posts.unshift(post);
+            localStorage.setItem('roblox_posts', JSON.stringify(posts));
+
+            showToast('تم نشر التريد بنجاح!', 'success');
+            closeModal();
+            renderPosts();
+            updateStats();
+        }
+
+        // إعجاب
+        function likePost(id) {
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                post.likes = (post.likes || 0) + 1;
+                localStorage.setItem('roblox_posts', JSON.stringify(posts));
+                renderPosts();
+                showToast('تم الإعجاب!', 'success');
+            }
+        }
+
+        // حذف المنشور
+        function deletePost(id) {
+            if (confirm('هل أنت متأكد من حذف هذا التريد؟')) {
+                posts = posts.filter(p => p.id !== id);
+                localStorage.setItem('roblox_posts', JSON.stringify(posts));
+                renderPosts();
+                updateStats();
+                showToast('تم الحذف!', 'success');
+            }
+        }
+
+        // تسجيل الخروج
+        function logout() {
+            sessionStorage.removeItem('roblox_current_user');
+            window.location.href = 'index.html';
+        }
+
+        // Toast
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + (type || 'info');
+            
+            const icons = {
+                success: 'fa-check-circle',
+                error: 'fa-times-circle',
+                warning: 'fa-exclamation-triangle',
+                info: 'fa-info-circle'
+            };
+
+            toast.innerHTML = '<i class="fas ' + icons[type] + ' toast-icon"></i><span>' + message + '</span>';
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
