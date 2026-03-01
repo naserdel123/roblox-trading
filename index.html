@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تريدات روبلوكس - تسجيل الدخول</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="auth-page">
+    <div class="animated-bg">
+        <div class="gradient-orb orb-1"></div>
+        <div class="gradient-orb orb-2"></div>
+        <div class="gradient-orb orb-3"></div>
+    </div>
+
+    <div class="auth-container">
+        <div class="logo-section">
+            <div class="logo">
+                <i class="fas fa-exchange-alt"></i>
+            </div>
+            <h1 class="site-title">تريدات روبلوكس</h1>
+            <p class="site-subtitle">منصة التداول الأولى للعرب</p>
+        </div>
+
+        <div class="form-container">
+            <div class="form-tabs">
+                <button class="tab-btn active" onclick="showTab('login')">تسجيل الدخول</button>
+                <button class="tab-btn" onclick="showTab('register')">إنشاء حساب</button>
+            </div>
+
+            <!-- نموذج الدخول -->
+            <form id="loginForm" class="auth-form active" onsubmit="doLogin(event)">
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="loginUser" required placeholder="اسم المستخدم">
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="loginPass" required placeholder="كلمة المرور">
+                        <i class="fas fa-lock input-icon"></i>
+                        <button type="button" class="toggle-password" onclick="togglePass('loginPass', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-options">
+                    <label class="remember-me">
+                        <input type="checkbox" id="rememberMe">
+                        <span class="checkmark"><i class="fas fa-check"></i></span>
+                        <span class="label-text">تذكرني</span>
+                    </label>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>دخول</span>
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+            </form>
+
+            <!-- نموذج التسجيل -->
+            <form id="registerForm" class="auth-form" onsubmit="doRegister(event)">
+                
+                <!-- رفع صورة الأفاتار -->
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div onclick="document.getElementById('avatarFile').click()" style="width: 90px; height: 90px; margin: 0 auto; border-radius: 50%; border: 3px dashed rgba(255,255,255,0.3); cursor: pointer; position: relative; overflow: hidden;">
+                        <input type="file" id="avatarFile" accept="image/*" style="display: none;" onchange="loadAvatar(this)">
+                        
+                        <div id="avatarIcon" style="width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; color: #a1a1aa;">
+                            <i class="fas fa-camera" style="font-size: 1.5rem; margin-bottom: 5px; color: #818cf8;"></i>
+                            <span style="font-size: 0.7rem;">الأفاتار</span>
+                        </div>
+                        
+                        <img id="avatarImg" style="display: none; width: 100%; height: 100%; object-fit: cover; position: absolute; top: 0; left: 0;">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="text" id="regUser" required placeholder="اسم المستخدم" minlength="3">
+                        <i class="fas fa-user input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="email" id="regEmail" required placeholder="البريد الإلكتروني">
+                        <i class="fas fa-envelope input-icon"></i>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="regPass" required placeholder="كلمة المرور" minlength="6" oninput="checkStrength()">
+                        <i class="fas fa-lock input-icon"></i>
+                        <button type="button" class="toggle-password" onclick="togglePass('regPass', this)">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="password-strength">
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                        <div class="strength-bar"></div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-wrapper">
+                        <input type="password" id="regConfirm" required placeholder="تأكيد كلمة المرور">
+                        <i class="fas fa-lock input-icon"></i>
+                    </div>
+                </div>
+
+                <button type="submit" class="submit-btn">
+                    <span>إنشاء حساب</span>
+                    <i class="fas fa-user-plus"></i>
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="toast-container" id="toastContainer"></div>
+
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-content">
+            <div class="loading-logo"><i class="fas fa-exchange-alt"></i></div>
+            <div class="loading-spinner"></div>
+            <p class="loading-text">جاري التحميل...</p>
+        </div>
+    </div>
+
+    <script>
+        let avatarData = '';
+
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').classList.add('hidden');
+            }, 500);
+            
+            // تذكرني
+            const remembered = localStorage.getItem('roblox_remember');
+            if (remembered) {
+                document.getElementById('loginUser').value = remembered;
+                document.getElementById('rememberMe').checked = true;
+            }
+        };
+
+        function showTab(tab) {
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+            
+            if (tab === 'login') {
+                document.getElementById('loginForm').classList.add('active');
+                document.querySelectorAll('.tab-btn')[0].classList.add('active');
+            } else {
+                document.getElementById('registerForm').classList.add('active');
+                document.querySelectorAll('.tab-btn')[1].classList.add('active');
+            }
+        }
+
+        function togglePass(id, btn) {
+            const input = document.getElementById(id);
+            const icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+
+        function checkStrength() {
+            const pass = document.getElementById('regPass').value;
+            const bars = document.querySelectorAll('.strength-bar');
+            let strength = 0;
+            if (pass.length >= 6) strength++;
+            if (pass.length >= 10) strength++;
+            if (/[A-Z]/.test(pass)) strength++;
+            if (/[0-9]/.test(pass)) strength++;
+            
+            bars.forEach((b, i) => {
+                b.className = 'strength-bar';
+                if (i < strength) {
+                    b.classList.add(strength <= 2 ? 'weak' : strength <= 3 ? 'medium' : 'strong');
+                }
+            });
+        }
+
+        function loadAvatar(input) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    avatarData = e.target.result;
+                    document.getElementById('avatarImg').src = avatarData;
+                    document.getElementById('avatarImg').style.display = 'block';
+                    document.getElementById('avatarIcon').style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function doRegister(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById('regUser').value;
+            const email = document.getElementById('regEmail').value;
+            const pass = document.getElementById('regPass').value;
+            const confirm = document.getElementById('regConfirm').value;
+            
+            if (pass !== confirm) {
+                toast('كلمات المرور غير متطابقة!', 'error');
+                return;
+            }
+            
+            let users = JSON.parse(localStorage.getItem('roblox_users') || '[]');
+            if (users.find(u => u.username === user)) {
+                toast('اسم المستخدم موجود!', 'error');
+                return;
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                username: user,
+                email: email,
+                password: btoa(pass),
+                avatar: avatarData || 'https://api.dicebear.com/7.x/avataaars/svg?seed=' + user
+            };
+            
+            users.push(newUser);
+            localStorage.setItem('roblox_users', JSON.stringify(users));
+            
+            toast('تم إنشاء الحساب!', 'success');
+            
+            setTimeout(() => {
+                sessionStorage.setItem('roblox_current_user', JSON.stringify(newUser));
+                window.location.href = 'feed.html';
+            }, 1000);
+        }
+
+        function doLogin(e) {
+            e.preventDefault();
+            
+            const user = document.getElementById('loginUser').value;
+            const pass = document.getElementById('loginPass').value;
+            const remember = document.getElementById('rememberMe').checked;
+            
+            const users = JSON.parse(localStorage.getItem('roblox_users') || '[]');
+            const found = users.find(u => u.username === user && atob(u.password) === pass);
+            
+            if (!found) {
+                toast('بيانات غير صحيحة!', 'error');
+                return;
+            }
+            
+            if (remember) localStorage.setItem('roblox_remember', user);
+            
+            sessionStorage.setItem('roblox_current_user', JSON.stringify(found));
+            toast('مرحباً ' + user + '!', 'success');
+            
+            setTimeout(() => {
+                window.location.href = 'feed.html';
+            }, 500);
+        }
+
+        function toast(msg, type) {
+            const t = document.createElement('div');
+            t.className = 'toast ' + type;
+            t.innerHTML = '<i class="fas ' + (type === 'error' ? 'fa-times-circle' : 'fa-check-circle') + '"></i><span>' + msg + '</span>';
+            document.getElementById('toastContainer').appendChild(t);
+            setTimeout(() => t.remove(), 3000);
+        }
+    </script>
+</body>
+</html>
