@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تريدات روبلوكس - المنشورات</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="feed-page">
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section-small">
+                <div class="logo-pulse">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <span class="site-name">تريدات روبلوكس</span>
+            </div>
+
+            <!-- مربع البحث -->
+            <div class="search-box">
+                <i class="fas fa-search"></i>
+                <input type="text" id="searchInput" placeholder="ابحث عن تريد..." oninput="searchPosts(this.value)">
+                <button class="clear-search" id="clearSearch" onclick="clearSearch()" style="display:none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div class="user-section">
+                <span class="username" id="currentUser">زائر</span>
+                <div class="user-avatar">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" id="userAvatar">
+                    <div class="online-status"></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="feed-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-card stats-card">
+                <h3><i class="fas fa-chart-line"></i> إحصائيات</h3>
+                <div class="stat-item">
+                    <i class="fas fa-box"></i>
+                    <span class="stat-value" id="totalPosts">0</span>
+                    <span class="stat-label">تريد</span>
+                </div>
+            </div>
+            
+            <!-- زر مسح البيانات -->
+            <button onclick="clearAllData()" style="width:100%; padding:10px; background:rgba(239,68,68,0.2); border:none; border-radius:10px; color:#ef4444; cursor:pointer; margin-top:10px; font-family:inherit;">
+                <i class="fas fa-trash"></i> مسح جميع البيانات
+            </button>
+        </aside>
+
+        <!-- Feed -->
+        <section class="feed-section">
+            <div class="feed-header">
+                <h2><i class="fas fa-fire"></i> أحدث التريدات</h2>
+            </div>
+
+            <!-- نتائج البحث -->
+            <div id="searchResults" style="display:none; margin-bottom:20px; padding:15px; background:rgba(99,102,241,0.1); border-radius:10px;">
+                <span id="searchText"></span>
+                <button onclick="clearSearch()" style="background:none; border:none; color:#ec4899; cursor:pointer; margin-right:10px;">
+                    <i class="fas fa-times"></i> إلغاء البحث
+                </button>
+            </div>
+
+            <div class="posts-grid" id="postsContainer">
+                <!-- المنشورات هنا -->
+            </div>
+
+            <!-- رسالة فارغة -->
+            <div id="emptyMessage" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                <i class="fas fa-box-open" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                <h3>لا توجد تريدات بعد</h3>
+                <p>كن أول من ينشر تريد! اضغط على الزر +</p>
+            </div>
+
+            <!-- رسالة لا توجد نتائج -->
+            <div id="noResults" style="display:none; text-align: center; padding: 40px 20px; color: var(--text-secondary);">
+                <i class="fas fa-search" style="font-size: 3rem; margin-bottom: 15px; opacity: 0.5;"></i>
+                <h3>لا توجد نتائج</h3>
+                <p>جرب كلمات بحث أخرى</p>
+            </div>
+        </section>
+    </main>
+
+    <!-- زر الإضافة العائم -->
+    <button class="fab-btn" id="fabBtn" onclick="openModal()" title="نشر تريد جديد">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- نموذج النشر المنبثق -->
+    <div class="modal-overlay" id="postModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> نشر تريد جديد</h3>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="postForm" onsubmit="handlePost(event)">
+                <!-- صورة العنصر -->
+                <div class="form-section">
+                    <h4><i class="fas fa-gift"></i> صورة العنصر</h4>
+                    <div class="image-upload" id="itemUpload" onclick="document.getElementById('itemImage').click()">
+                        <input type="file" id="itemImage" accept="image/*" hidden onchange="previewImage(this, 'itemPreview')">
+                        <div class="upload-placeholder" id="itemPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اضغط لرفع صورة العنصر</span>
+                        </div>
+                        <img id="itemPreview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="removeImage(event, 'itemPreview', 'itemPlaceholder', 'itemImage')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="itemName" required placeholder="اسم العنصر" class="modern-input">
+                </div>
+
+                <!-- صورة المقابل -->
+                <div class="form-section">
+                    <h4><i class="fas fa-hand-holding-usd"></i> صورة المقابل</h4>
+                    <div class="image-upload" id="tradeUpload" onclick="document.getElementById('tradeImage').click()">
+                        <input type="file" id="tradeImage" accept="image/*" hidden onchange="previewImage(this, 'tradePreview')">
+                        <div class="upload-placeholder" id="tradePlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اضغط لرفع صورة المقابل</span>
+                        </div>
+                        <img id="tradePreview" class="preview-image">
+                        <button type="button" class="remove-image" onclick="removeImage(event, 'tradePreview', 'tradePlaceholder', 'tradeImage')">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <input type="text" id="tradeName" required placeholder="اسم المقابل" class="modern-input">
+                </div>
+
+                <!-- رابط TikTok - إجباري -->
+                <div class="form-section">
+                    <h4><i class="fab fa-tiktok"></i> رابط TikTok <span style="color:#ef4444">*</span></h4>
+                    <input type="url" id="tiktokUrl" required placeholder="https://tiktok.com/@username" class="modern-input">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">نشر التريد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================
+        // مسح البيانات القديمة تلقائياً
+        // ============================================
+        
+        (function() {
+            const oldPosts = JSON.parse(localStorage.getItem('roblox_posts') || '[]');
+            const filteredPosts = oldPosts.filter(post => {
+                return post.author !== 'RobloxKing' && post.author !== 'ProTrader';
+            });
+            
+            if (filteredPosts.length !== oldPosts.length) {
+                localStorage.setItem('roblox_posts', JSON.stringify(filteredPosts));
+                console.log('تم حذف المنشورات التجريبية');
+            }
+        })();
+
+        // ============================================
+        // متغيرات عامة
+        // ============================================
+        
+        let currentUser = null;
+        let posts = [];
+        let searchQuery = '';
+
+        // ============================================
+        // تهيئة الصفحة
+        // ============================================
+        
+        window.onload = function() {
+            const userData = sessionStorage.getItem('roblox_current_user');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userData);
+            document.getElementById('currentUser').textContent = currentUser.username;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+
+            loadPosts();
+            
+            // تأكد من أن زر الزائد يعمل
+            document.getElementById('fabBtn').addEventListener('click', openModal);
+        };
+
+        // ============================================
+        // دوال المنشورات
+        // ============================================
+        
+        function loadPosts() {
+            posts = JSON.parse(localStorage.getItem('roblox_posts') || '[]');
+            renderPosts();
+            updateStats();
+        }
+
+        function renderPosts() {
+            const container = document.getElementById('postsContainer');
+            const emptyMessage = document.getElementById('emptyMessage');
+            const noResults = document.getElementById('noResults');
+            
+            container.innerHTML = '';
+
+            let filteredPosts = posts;
+            if (searchQuery.trim()) {
+                filteredPosts = posts.filter(p => 
+                    p.itemName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    p.tradeName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                    p.author.toLowerCase().includes(searchQuery.toLowerCase())
+                );
+            }
+
+            if (posts.length === 0) {
+                emptyMessage.style.display = 'block';
+                noResults.style.display = 'none';
+                container.style.display = 'none';
+                return;
+            } else {
+                emptyMessage.style.display = 'none';
+                container.style.display = 'grid';
+            }
+
+            if (filteredPosts.length === 0 && searchQuery) {
+                noResults.style.display = 'block';
+                container.style.display = 'none';
+                return;
+            } else {
+                noResults.style.display = 'none';
+                container.style.display = 'grid';
+            }
+
+            filteredPosts.slice().reverse().forEach(post => {
+                container.appendChild(createPostCard(post));
+            });
+        }
+
+        function createPostCard(post) {
+            const card = document.createElement('div');
+            card.className = 'post-card';
+            
+            card.innerHTML = `
+                <div class="post-header">
+                    <div class="post-author">
+                        <img src="${post.authorAvatar}" class="author-avatar">
+                        <div class="author-info">
+                            <h4>${post.author}</h4>
+                            <span class="post-time">${formatTime(post.createdAt)}</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="post-images">
+                    <div class="img-box">
+                        <span class="img-label">يعرض</span>
+                        <img src="${post.itemImage}" alt="${post.itemName}">
+                    </div>
+                    <div class="img-box">
+                        <span class="img-label">يريد</span>
+                        <img src="${post.tradeImage}" alt="${post.tradeName}">
+                    </div>
+                </div>
+                
+                <div class="post-info">
+                    <div class="trade-names">
+                        <span class="item-name">${post.itemName}</span>
+                        <i class="fas fa-exchange-alt"></i>
+                        <span class="trade-name">${post.tradeName}</span>
+                    </div>
+                    
+                    <a href="${post.tiktokUrl}" target="_blank" class="tiktok-link">
+                        <i class="fab fa-tiktok"></i> تواصل عبر TikTok
+                    </a>
+                    
+                    <div class="post-actions">
+                        <button class="btn-like" onclick="likePost(${post.id})">
+                            <i class="fas fa-heart"></i> ${post.likes || 0}
+                        </button>
+                        ${post.author === currentUser.username ? `
+                        <button class="btn-delete" onclick="deletePost(${post.id})">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                        ` : ''}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = Math.floor((now - date) / 1000);
+            
+            if (diff < 60) return 'الآن';
+            if (diff < 3600) return `منذ ${Math.floor(diff / 60)} دقيقة`;
+            if (diff < 86400) return `منذ ${Math.floor(diff / 3600)} ساعة`;
+            return `منذ ${Math.floor(diff / 86400)} يوم`;
+        }
+
+        // ============================================
+        // البحث
+        // ============================================
+        
+        function searchPosts(query) {
+            searchQuery = query;
+            const clearBtn = document.getElementById('clearSearch');
+            const searchResults = document.getElementById('searchResults');
+            const searchText = document.getElementById('searchText');
+            
+            if (query.trim()) {
+                clearBtn.style.display = 'flex';
+                searchResults.style.display = 'block';
+                searchText.textContent = `نتائج البحث عن: "${query}"`;
+            } else {
+                clearBtn.style.display = 'none';
+                searchResults.style.display = 'none';
+            }
+            
+            renderPosts();
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            document.getElementById('clearSearch').style.display = 'none';
+            document.getElementById('searchResults').style.display = 'none';
+            renderPosts();
+        }
+
+        function updateStats() {
+            document.getElementById('totalPosts').textContent = posts.length;
+        }
+
+        // ============================================
+        // المودال - معدل ليعمل بشكل صحيح
+        // ============================================
+        
+        function openModal() {
+            console.log('فتح المودال');
+            const modal = document.getElementById('postModal');
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            console.log('إغلاق المودال');
+            const modal = document.getElementById('postModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+            
+            // إعادة تعيين النموذج
+            document.getElementById('postForm').reset();
+            removeImage(null, 'itemPreview', 'itemPlaceholder', 'itemImage');
+            removeImage(null, 'tradePreview', 'tradePlaceholder', 'tradeImage');
+        }
+
+        // إغلاق عند الضغط خارج المحتوى
+        document.getElementById('postModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+
+        // ============================================
+        // الصور
+        // ============================================
+        
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById(previewId);
+                    const placeholderId = previewId.replace('Preview', 'Placeholder');
+                    const placeholder = document.getElementById(placeholderId);
+                    const removeBtn = preview.parentElement.querySelector('.remove-image');
+                    
+                    preview.src = e.target.result;
+                    preview.style.display = 'block';
+                    placeholder.style.display = 'none';
+                    removeBtn.style.display = 'flex';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        function removeImage(e, previewId, placeholderId, inputId) {
+            if (e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+            
+            const preview = document.getElementById(previewId);
+            const placeholder = document.getElementById(placeholderId);
+            const input = document.getElementById(inputId);
+            const removeBtn = preview.parentElement.querySelector('.remove-image');
+            
+            if (preview && placeholder && input) {
+                preview.src = '';
+                preview.style.display = 'none';
+                placeholder.style.display = 'flex';
+                input.value = '';
+                if (removeBtn) removeBtn.style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // نشر منشور
+        // ============================================
+        
+        function handlePost(e) {
+            e.preventDefault();
+
+            const itemName = document.getElementById('itemName').value.trim();
+            const tradeName = document.getElementById('tradeName').value.trim();
+            const tiktokUrl = document.getElementById('tiktokUrl').value.trim();
+            const itemPreview = document.getElementById('itemPreview');
+            const tradePreview = document.getElementById('tradePreview');
+
+            if (!itemPreview.src || itemPreview.style.display === 'none') {
+                showToast('يرجى رفع صورة العنصر!', 'error');
+                return;
+            }
+
+            if (!tradePreview.src || tradePreview.style.display === 'none') {
+                showToast('يرجى رفع صورة المقابل!', 'error');
+                return;
+            }
+
+            if (!tiktokUrl) {
+                showToast('رابط TikTok إجباري!', 'error');
+                document.getElementById('tiktokUrl').focus();
+                return;
+            }
+
+            if (!tiktokUrl.includes('tiktok.com')) {
+                showToast('يرجى إدخال رابط TikTok صحيح!', 'error');
+                return;
+            }
+
+            const post = {
+                id: Date.now(),
+                author: currentUser.username,
+                authorAvatar: currentUser.avatar,
+                itemName,
+                itemImage: itemPreview.src,
+                tradeName,
+                tradeImage: tradePreview.src,
+                tiktokUrl: tiktokUrl,
+                likes: 0,
+                createdAt: new Date().toISOString()
+         
