@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تريدات روبلوكس - المنشورات</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="feed-page">
+    <!-- Header -->
+    <header class="main-header">
+        <div class="header-content">
+            <div class="logo-section-small">
+                <div class="logo-pulse">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <span class="site-name">تريدات روبلوكس</span>
+            </div>
+
+            <nav class="main-nav">
+                <a href="#" class="nav-link active"><i class="fas fa-home"></i></a>
+                <a href="#" class="nav-link"><i class="fas fa-search"></i></a>
+                <a href="#" class="nav-link"><i class="fas fa-envelope"></i></a>
+            </nav>
+
+            <div class="user-section">
+                <span class="username" id="currentUser">زائر</span>
+                <div class="user-avatar">
+                    <img src="https://via.placeholder.com/40" alt="Avatar" id="userAvatar">
+                    <div class="online-status"></div>
+                </div>
+                <button class="logout-btn" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- المحتوى الرئيسي -->
+    <main class="feed-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-card stats-card">
+                <h3><i class="fas fa-chart-line"></i> إحصائيات</h3>
+                <div class="stat-item">
+                    <i class="fas fa-box"></i>
+                    <span class="stat-value" id="totalPosts">0</span>
+                    <span class="stat-label">منشور</span>
+                </div>
+            </div>
+
+            <div class="sidebar-card categories-card">
+                <h3><i class="fas fa-tags"></i> الفئات</h3>
+                <div class="category-list">
+                    <button class="category-btn active" onclick="filterCategory('all')">الكل</button>
+                    <button class="category-btn" onclick="filterCategory('limited')">Limited</button>
+                    <button class="category-btn" onclick="filterCategory('robux')">Robux</button>
+                    <button class="category-btn" onclick="filterCategory('gamepass')">Game Pass</button>
+                    <button class="category-btn" onclick="filterCategory('avatar')">Avatar</button>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Feed -->
+        <section class="feed-section">
+            <div class="feed-header">
+                <h2><i class="fas fa-fire"></i> أحدث التريدات</h2>
+            </div>
+
+            <div class="posts-grid" id="postsContainer">
+                <!-- المنشورات هنا -->
+            </div>
+        </section>
+    </main>
+
+    <!-- زر الإضافة العائم -->
+    <button class="fab-btn" onclick="openModal()" title="نشر تريد جديد">
+        <i class="fas fa-plus"></i>
+    </button>
+
+    <!-- نموذج النشر المنبثق -->
+    <div class="modal-overlay" id="postModal" onclick="closeModalOutside(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <h3><i class="fas fa-plus-circle"></i> نشر تريد جديد</h3>
+                <button class="close-modal" onclick="closeModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <form id="postForm" onsubmit="handlePost(event)">
+                <div class="form-section">
+                    <h4><i class="fas fa-gift"></i> العنصر المعروض</h4>
+                    
+                    <div class="image-upload" id="itemImageUpload" onclick="document.getElementById('itemImage').click()">
+                        <input type="file" id="itemImage" accept="image/*" hidden onchange="previewImage(this, 'itemPreview')">
+                        <div class="upload-placeholder" id="itemPlaceholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اضغط لرفع صورة العنصر</span>
+                        </div>
+                        <img id="itemPreview" style="display:none; width:100%; height:200px; object-fit:cover; border-radius:10px;">
+                    </div>
+
+                    <input type="text" id="itemName" required placeholder="اسم العنصر" style="width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white;">
+                    
+                    <select id="itemCategory" required style="width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white;">
+                        <option value="">اختر الفئة</option>
+                        <option value="limited">Limited</option>
+                        <option value="robux">Robux</option>
+                        <option value="gamepass">Game Pass</option>
+                        <option value="avatar">Avatar</option>
+                    </select>
+                </div>
+
+                <div class="form-section">
+                    <h4><i class="fas fa-hand-holding-usd"></i> المقابل المطلوب</h4>
+                    <input type="text" id="tradeFor" required placeholder="وصف المقابل" style="width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white;">
+                    
+                    <input type="url" id="tiktokUrl" placeholder="رابط TikTok (اختياري)" style="width:100%; padding:15px; margin:10px 0; border-radius:10px; border:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); color:white;">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">إلغاء</button>
+                    <button type="submit" class="btn-primary">نشر التريد</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <script>
+        // ============================================
+        // كود صفحة المنشورات
+        // ============================================
+
+        let currentUser = null;
+        let posts = [];
+        let currentCategory = 'all';
+
+        // التحقق من تسجيل الدخول
+        window.onload = function() {
+            const userData = sessionStorage.getItem('roblox_current_user');
+            if (!userData) {
+                window.location.href = 'index.html';
+                return;
+            }
+
+            currentUser = JSON.parse(userData);
+            document.getElementById('currentUser').textContent = currentUser.username;
+            document.getElementById('userAvatar').src = currentUser.avatar;
+
+            loadPosts();
+        };
+
+        // تحميل المنشورات
+        function loadPosts() {
+            posts = JSON.parse(localStorage.getItem('roblox_posts') || '[]');
+            
+            if (posts.length === 0) {
+                // إضافة منشورات تجريبية
+                posts = [
+                    {
+                        id: 1,
+                        author: 'RobloxKing',
+                        authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RobloxKing',
+                        itemName: 'Dominus Infernus',
+                        itemCategory: 'limited',
+                        itemImage: 'https://via.placeholder.com/300x200/ff4444/ffffff?text=Dominus',
+                        tradeFor: '1,000,000 Robux',
+                        tiktokUrl: 'https://tiktok.com/@robloxking',
+                        likes: 156
+                    },
+                    {
+                        id: 2,
+                        author: 'ProTrader',
+                        authorAvatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ProTrader',
+                        itemName: 'Valkyrie Helm',
+                        itemCategory: 'limited',
+                        itemImage: 'https://via.placeholder.com/300x200/4444ff/ffffff?text=Valkyrie',
+                        tradeFor: '500,000 Robux',
+                        tiktokUrl: '',
+                        likes: 89
+                    }
+                ];
+                localStorage.setItem('roblox_posts', JSON.stringify(posts));
+            }
+
+            renderPosts();
+        }
+
+        // عرض المنشورات
+        function renderPosts() {
+            const container = document.getElementById('postsContainer');
+            container.innerHTML = '';
+
+            const filtered = currentCategory === 'all' 
+                ? posts 
+                : posts.filter(p => p.itemCategory === currentCategory);
+
+            filtered.forEach(post => {
+                const card = document.createElement('div');
+                card.className = 'post-card';
+                card.innerHTML = `
+                    <div class="post-header">
+                        <div class="post-author">
+                            <img src="${post.authorAvatar}" class="author-avatar">
+                            <div>
+                                <h4>${post.author}</h4>
+                            </div>
+                        </div>
+                        <span class="post-category">${post.itemCategory}</span>
+                    </div>
+                    <div class="post-image">
+                        <img src="${post.itemImage}" style="width:100%; height:200px; object-fit:cover;">
+                    </div>
+                    <div class="post-content">
+                        <h3>${post.itemName}</h3>
+                        <p>المقابل: ${post.tradeFor}</p>
+                        ${post.tiktokUrl ? `<a href="${post.tiktokUrl}" target="_blank" style="color:#ff0050;"><i class="fab fa-tiktok"></i> TikTok</a>` : ''}
+                        <div style="margin-top:10px;">
+                            <button onclick="likePost(${post.id})" style="background:none; border:none; color:white; cursor:pointer;">
+                                <i class="fas fa-heart" style="color:#ec4899;"></i> ${post.likes}
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+
+            document.getElementById('totalPosts').textContent = posts.length;
+        }
+
+        // فلترة حسب الفئة
+        function filterCategory(cat) {
+            currentCategory = cat;
+            document.querySelectorAll('.category-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            renderPosts();
+        }
+
+        // فتح/إغلاق المودال
+        function openModal() {
+            document.getElementById('postModal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('postModal').classList.remove('active');
+            document.getElementById('postForm').reset();
+            document.getElementById('itemPreview').style.display = 'none';
+            document.getElementById('itemPlaceholder').style.display = 'flex';
+        }
+
+        function closeModalOutside(e) {
+            if (e.target.id === 'postModal') closeModal();
+        }
+
+        // معاينة الصورة
+        function previewImage(input, previewId) {
+            if (input.files && input.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById(previewId).src = e.target.result;
+                    document.getElementById(previewId).style.display = 'block';
+                    document.getElementById('itemPlaceholder').style.display = 'none';
+                };
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+
+        // نشر منشور
+        function handlePost(e) {
+            e.preventDefault();
+
+            const itemName = document.getElementById('itemName').value;
+            const itemCategory = document.getElementById('itemCategory').value;
+            const tradeFor = document.getElementById('tradeFor').value;
+            const tiktokUrl = document.getElementById('tiktokUrl').value;
+            const itemImage = document.getElementById('itemPreview').src || 'https://via.placeholder.com/300x200/6366f1/ffffff?text=No+Image';
+
+            const post = {
+                id: Date.now(),
+                author: currentUser.username,
+                authorAvatar: currentUser.avatar,
+                itemName,
+                itemCategory,
+                itemImage,
+                tradeFor,
+                tiktokUrl,
+                likes: 0
+            };
+
+            posts.unshift(post);
+            localStorage.setItem('roblox_posts', JSON.stringify(posts));
+
+            showToast('تم نشر التريد بنجاح!', 'success');
+            closeModal();
+            renderPosts();
+        }
+
+        // إعجاب
+        function likePost(id) {
+            const post = posts.find(p => p.id === id);
+            if (post) {
+                post.likes++;
+                localStorage.setItem('roblox_posts', JSON.stringify(posts));
+                renderPosts();
+            }
+        }
+
+        // تسجيل الخروج
+        function logout() {
+            sessionStorage.removeItem('roblox_current_user');
+            window.location.href = 'index.html';
+        }
+
+        // Toast
+        function showToast(message, type) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = 'toast ' + type;
+            toast.innerHTML = '<i class="fas fa-check-circle"></i><span>' + message + '</span>';
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 3000);
+        }
+    </script>
+</body>
+                          </html>
+                          
